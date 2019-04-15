@@ -386,7 +386,7 @@ class DEN(object):
             selected_params = dict()
             all_indices = defaultdict(list) # nonzero unis 
             for i in range(self.n_layers, 0, -1):
-                if i == self.n_layers:
+                if i == self.n_layers:  # the last fc layer is selected
                     w = params['layer%d/weight_%d:0'%(i, task_id)]
                     b = params['layer%d/biases_%d:0'%(i, task_id)]
                     for j in range(w.shape[0]):
@@ -395,7 +395,7 @@ class DEN(object):
                     selected_params['layer%d/weight_%d:0'%(i, task_id)] = w[np.ix_(all_indices['layer%d'%i], [0])]
                     selected_params['layer%d/biases_%d:0'%(i, task_id)] = b
                 else:
-                    w = params['layer%d/weight:0'%i]
+                    w = params['layer%d/weight:0'%i]  # no task_id in the weights
                     b = params['layer%d/biases:0'%i]
                     top_indices = all_indices['layer%d'%(i+1)]
                     for j in range(w.shape[0]):
@@ -425,6 +425,7 @@ class DEN(object):
                 selected_params[key] = values
     
             # union
+            # union the selected units and the other units
             for i in range(self.n_layers, 0, -1):
                 if i == self.n_layers:
                     temp_weight = params['layer%d/weight_%d:0'%(i, task_id)]
@@ -443,7 +444,7 @@ class DEN(object):
 
 
             """ Network Expansion """
-            if c_loss < self.loss_thr:
+            if c_loss < self.loss_thr:  # we may need to make a threshold manually.
                 pass
             else:
                 # addition
@@ -451,7 +452,7 @@ class DEN(object):
                 self.sess = tf.Session()
                 self.load_params(params)
                 self.set_initial_states(data_size)
-                self.build_model(task_id, expansion = True)
+                self.build_model(task_id, expansion = True)  # expansion is true the 2nd build_model
                 self.optimization(self.prev_W, expansion = True)
                 self.sess.run(tf.global_variables_initializer())
     
