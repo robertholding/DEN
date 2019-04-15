@@ -28,11 +28,13 @@ testX = mnist.test.images
 
 task_permutation = []
 for task in range(10):
-	task_permutation.append(np.random.permutation(784))
+	task_permutation.append(np.random.permutation(784))  # permute the indices of 784 dimension of the image
 
 trainXs, valXs, testXs = [], [], []
 for task in range(10):
-	trainXs.append(trainX[:, task_permutation[task]])
+    # advanced indices to permute the MNIST image, 
+    # each task uses a same permutation pattern
+	trainXs.append(trainX[:, task_permutation[task]])  
 	valXs.append(valX[:, task_permutation[task]])
 	testXs.append(testX[:, task_permutation[task]])
 

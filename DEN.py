@@ -249,8 +249,9 @@ class DEN(object):
             for i in range(1, self.n_layers):
                 w = self.get_variable('layer%d'%i, 'weight', True)
                 b = self.get_variable('layer%d'%i, 'biases', True)
-                bottom = tf.nn.relu(tf.matmul(bottom, w) + b)
+                bottom = tf.nn.relu(tf.matmul(bottom, w) + b)  # X was fed to the 2-layer fc network
             prev_dim = bottom.get_shape().as_list()[1]
+            # top layer for softmax to classifier, the weights are labeled by the task_id and layer_id
             w = self.create_variable('layer%d'%self.n_layers, 'weight_%d'%task_id, [prev_dim, self.n_classes], True)
             b = self.create_variable('layer%d'%self.n_layers, 'biases_%d'%task_id, [self.n_classes], True)
             self.y = tf.matmul(bottom, w) + b
@@ -356,11 +357,11 @@ class DEN(object):
         trainX, trainY, self.valX, self.valY, testX, testY = data
         self.train_range = np.array(range(len(trainY)))
         data_size = len(trainX)
-        self.set_initial_states(data_size)
+        self.set_initial_states(data_size)  # initialization setting of the optimization, decay setp
 
         expansion_layer = [] # to split
         self.expansion_layer = [0, 0] # new units
-        self.build_model(task_id)
+        self.build_model(task_id)  # construct the model according to the arguments
 
         if self.T == 1:
             self.optimization(self.prev_W)
