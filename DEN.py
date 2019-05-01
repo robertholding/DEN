@@ -11,7 +11,7 @@ class DEN(object):
         self.T = 0
         self.task_indices = []
         self.batch_size = config.batch_size
-        self.dims = config.dims
+        self.dims = config.dims  #TODO check the if the flag has the list
         self.params = dict()
         self.ex_k = config.ex_k
         self.param_trained = set()
