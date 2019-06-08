@@ -76,7 +76,7 @@ class DEN(object):
             # current task is trainable
             w = tf.get_variable(scope_name, initializer = param, trainable = trainable)
             self.params[w.name] = w
-            
+        print("load params:", self.params)
     def create_variable(self, scope, name, shape, trainable = True):
         with tf.variable_scope(scope):
             w = tf.get_variable(name, shape, trainable = trainable)
@@ -283,6 +283,7 @@ class DEN(object):
     def optimization(self, prev_W, selective = False, splitting = False, expansion = None):
         if selective:
             all_var = [ var for var in tf.trainable_variables() if 'layer%d'%self.n_layers in var.name ]
+            print("all_var:", all_var)
         else:
             all_var = [ var for var in tf.trainable_variables() ]
 
@@ -302,8 +303,10 @@ class DEN(object):
             for var in all_var:
                 if var.name in prev_W.keys():
                     prev_w = prev_W[var.name]
+                    print("prev_w:", prev_w)
                     if len(prev_w.shape) == 1:
                         sliced = var[:prev_w.shape[0]]
+                        print("sliced:", sliced)
                     else:
                         sliced = var[:prev_w.shape[0], :prev_w.shape[1]]
                     regular_terms.append(tf.nn.l2_loss( sliced - prev_w ))
@@ -324,6 +327,7 @@ class DEN(object):
                 var_temp = var - (th_t * tf.sign(var))
                 l1_op = var.assign(tf.where(tf.less(tf.abs(var), th_t), zero_t, var_temp))
                 l1_op_list.append(l1_op)
+        print("l1_op_list:",l1_op_list)
 
         GL_var = [var for var in tf.trainable_variables() if 'new' in var.name and ('bw' in var.name or 'tw' in var.name)]
         gl_op_list = []
@@ -338,6 +342,7 @@ class DEN(object):
                     gw.append(gw_gl)
                 gl_op = var.assign(tf.stack(gw, 1))
                 gl_op_list.append(gl_op)
+        print("gl_op_list:",gl_op_list)
 
         with tf.control_dependencies(l1_op_list + gl_op_list):
             self.opt = tf.no_op()
@@ -405,9 +410,12 @@ class DEN(object):
                     sub_weight = w[np.ix_(all_indices['layer%d'%i], top_indices)]
                     sub_biases = b[all_indices['layer%d'%(i+1)]]
                     selected_params['layer%d/weight:0'%i] = sub_weight
+                    print("selected_params:", selected_params)
                     selected_params['layer%d/biases:0'%i] = sub_biases
                     selected_prev_params['layer%d/weight:0'%i] = \
                         self.prev_W['layer%d/weight:0'%i][np.ix_(all_indices['layer%d'%i], top_indices)]
+                    print("selected_prev_params:", selected_prev_params,
+                          selected_prev_params["layer2/weight:0"].shape)
                     selected_prev_params['layer%d/biases:0'%i] = \
                         self.prev_W['layer%d/biases:0'%i][all_indices['layer%d'%(i+1)]]
 
